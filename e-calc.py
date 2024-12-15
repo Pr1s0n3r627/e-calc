@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
                              QPushButton, QLineEdit, QLabel, QGridLayout)
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve
 import random
 
 class EvilCalculator(QWidget):
@@ -49,6 +49,29 @@ class EvilCalculator(QWidget):
     def on_button_click(self):
         button = self.sender()
         button_text = button.text()
+
+        # Store original geometry before animation
+        orig_geometry = button.geometry()  
+
+        # Crazy Animations!
+        animation = QPropertyAnimation(button, b"geometry")
+        animation.setDuration(200)
+        animation.setStartValue(orig_geometry)
+
+        if button_text == '=':
+            animation.setEndValue(orig_geometry.translated(0, 50))
+            animation.setEasingCurve(QEasingCurve.OutBounce)
+        else:
+            new_width = orig_geometry.width() * 1.2
+            new_height = orig_geometry.height() * 1.2
+            new_geom = orig_geometry.adjusted(0, 0, int(new_width - orig_geometry.width()), int(new_height - orig_geometry.height()))
+            animation.setEndValue(new_geom)
+            animation.setEasingCurve(QEasingCurve.OutElastic)
+
+        animation.start()
+
+        # Restore original geometry after animation finishes
+        animation.finished.connect(lambda: button.setGeometry(orig_geometry)) 
 
         if button_text == '=':
             self.calculate_result()
